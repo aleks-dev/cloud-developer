@@ -38,3 +38,5 @@ venv/
 course-02/exercises/udacity-c2-restapi/udagram-aleks-dev KEY pass.txt
 aws-elastic-beanstalk-cli-setup
 aws-elastic-beanstalk-cli-setup
+course-03/exercises/04-k8s/env-secret-original.yaml
+course-03/exercises/04-k8s/aws-secret-original.yaml
