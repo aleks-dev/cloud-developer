@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -6,6 +6,9 @@ metadata:
   name: backend-feed
 spec:
   replicas: 3
+  selector:
+    matchLabels:
+      service: backend-feed
   template:
     metadata:
       labels:
@@ -18,10 +21,10 @@ spec:
         resources:
           requests:
             memory: "64Mi"
-            cpu: "250m"
+            cpu: "125m"
           limits:
-            memory: "1024Mi"
-            cpu: "500m"    
+            memory: "256Mi"
+            cpu: "125m"    
         env:
         - name: URL
           valueFrom:
@@ -76,4 +79,4 @@ spec:
       volumes:
       - name: aws-secret
         secret:
-          secretName: aws-secret       
+          secretName: aws-secret
