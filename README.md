@@ -4,7 +4,7 @@ This project is forked from the [Udacity's Cloud Developer Nanodegree one](https
 It's a POW for my work on GitHub and my overall (high) engagement in this course  :)
 
 
-# Project structure
+## Project structure
 ---
 ### Architectural structure
 ---
@@ -20,7 +20,7 @@ The project is divided into :
 Project's GitHub structure follows the original one, as laid down by Udacity.
 
 
-# Setup
+## Setup
 ---
 There are **lots of things** to be set-up on your machine for this whole Project to run !
 I will name here a _few most important GENERAL ones_ ONLY, for the **_Win 10_** platform :
@@ -67,13 +67,13 @@ then:
 2. docker push [docker_hub_username]/[docker_hub_repo_name]
 ```
 
-# Deployment
+## Deployment
 ---
 The project _should be deployed_ to the **AWS Cloud**. 
 _Every course inside this project has specific deployment specs._
 - For more info on the different deployment specs, please check the child READMEs under the separate Courses.
 
-# Licence
+## Licence
 ---
 Please feel free to use your forks on your own convenience, you `nerds` ;)
 
