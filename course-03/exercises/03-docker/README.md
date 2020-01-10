@@ -1,2 +1,2 @@
-# cloud-developer
-content for Udacity's cloud developer nanodegree
+# Docker
+Please check the main README in the root level of this Course 3.
