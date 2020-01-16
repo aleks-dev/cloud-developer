@@ -4,7 +4,7 @@
         {
             "Effect": "Allow",
             "Action": "logs:CreateLogGroup",
-            "Resource": "arn:aws:logs:us-east-1:913036176028:*"
+            "Resource": "arn:aws:logs:eu-west-1:492383393326:*"
         },
         {
             "Effect": "Allow",
@@ -13,7 +13,7 @@
                 "logs:PutLogEvents"
             ],
             "Resource": [
-                "arn:aws:logs:us-east-1:913036176028:log-group:/aws/lambda/create-group:*"
+                "arn:aws:logs:eu-west-1:492383393326:log-group:/aws/lambda/create-group:*"
             ]
         },
         {
@@ -22,7 +22,7 @@
                 "dynamodb:PutItem"
             ],
             "Resource": [
-                "arn:aws:dynamodb:us-east-1:*:table/Groups"
+                "arn:aws:dynamodb:eu-west-1:*:table/groups"
             ]
         }
     ]
