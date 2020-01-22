@@ -10,7 +10,7 @@ const apiId = process.env.API_ID
 
 const connectionParams = {
   apiVersion: "2018-11-29",
-  endpoint: `${apiId}.execute-api.us-east-1.amazonaws.com/${stage}`
+  endpoint: `${apiId}.execute-api.eu-west-1.amazonaws.com/${stage}`
 }
 
 const apiGateway = new AWS.ApiGatewayManagementApi(connectionParams)
