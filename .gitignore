@@ -125,3 +125,6 @@ aws-elastic-beanstalk-cli-setup
 course-03/exercises/04-k8s/aws-secret-original.yaml
 course-03/exercises/04-k8s/env-secret-original.yaml
 *.zip
+course-04/exercises/lesson-3/solution/.serverless/cloudformation-template-create-stack.json
+course-04/exercises/lesson-3/solution/.serverless/cloudformation-template-update-stack.json
+course-04/exercises/lesson-3/solution/.serverless/serverless-state.json
