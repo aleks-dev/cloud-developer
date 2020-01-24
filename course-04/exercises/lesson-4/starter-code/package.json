@@ -26,5 +26,8 @@
     "webpack": "^4.41.5"
   },
   "author": "Ivan Mushketyk",
+  "contributors": [
+    "Aleksandar Velichkovski"
+  ],
   "license": "MIT"
 }

@@ -17,7 +17,7 @@ provider:
     GROUPS_TABLE: Groups-${self:provider.stage}
     IMAGES_TABLE: Images-${self:provider.stage}
     IMAGE_ID_INDEX: ImageIdIndex
-    #CONNECTIONS_TABLE: Connections-${self:provider.stage}
+    CONNECTIONS_TABLE: Connections-${self:provider.stage}
     IMAGES_S3_BUCKET: serverless-udagram-images-aleks-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
     #THUMBNAILS_S3_BUCKET: serverless-udagram-thumbnail-${self:provider.stage}
@@ -47,12 +47,12 @@ provider:
     #   Action:
     #     - s3:PutObject
     #   Resource: "arn:aws:s3:::${self:provider.environment.THUMBNAILS_S3_BUCKET}/*"
-    # - Effect: Allow
-    #   Action:
-    #     - dynamodb:Scan
-    #     - dynamodb:PutItem
-    #     - dynamodb:DeleteItem
-    #   Resource: arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.CONNECTIONS_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.CONNECTIONS_TABLE}
 
 custom:
   #topicName: imagesTopic-${self:provider.stage}
@@ -116,11 +116,11 @@ functions:
             requestModels:
               'application/json': ImageRequest
 
-  SendUploadNotifications: #TODO za mene
-    # environment:
-    #   STAGE: ${self:provider.stage}
-    #   API_ID:
-    #     Ref: WebsocketsApi
+  SendUploadNotifications:
+    environment:
+      STAGE: ${self:provider.stage}
+      API_ID:
+        Ref: WebsocketsApi
     handler: src/lambda/s3/sendNotifications.handler
     # events:
     #   - sns:
@@ -136,17 +136,17 @@ functions:
   # ResizeImage:
   #   handler: src/lambda/s3/resizeImage.handler
 
-  # ConnectHandler:
-  #   handler: src/lambda/websocket/connect.handler
-  #   events:
-  #     - websocket:
-  #         route: $connect
+  ConnectHandler:
+    handler: src/lambda/websocket/connect.handler
+    events:
+      - websocket:
+          route: $connect
 
-  # DisconnectHandler:
-  #   handler: src/lambda/websocket/disconnect.handler
-  #   events:
-  #     - websocket:
-  #         route: $disconnect
+  DisconnectHandler:
+    handler: src/lambda/websocket/disconnect.handler
+    events:
+      - websocket:
+          route: $disconnect
 
   # # Uncomment if you want to enable Elasticsearch sync
   # # SyncWithElasticsearch:
@@ -199,19 +199,17 @@ resources:
             Projection:
               ProjectionType: ALL
 
-    # WebSocketConnectionsDynamoDBTable:
-    #   Type: AWS::DynamoDB::Table
-    #   Properties:
-    #     AttributeDefinitions:
-    #       -
-    #         AttributeName: id
-    #         AttributeType: S
-    #     KeySchema:
-    #       -
-    #         AttributeName: id
-    #         KeyType: HASH
-    #     BillingMode: PAY_PER_REQUEST
-    #     TableName: ${self:provider.environment.CONNECTIONS_TABLE}
+    WebSocketConnectionsDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.CONNECTIONS_TABLE}
 
     RequestBodyValidator:
       Type: AWS::ApiGateway::RequestValidator
@@ -236,8 +234,7 @@ resources:
             #   Topic: !Ref ImagesTopic
         CorsConfiguration:
           CorsRules:
-            -
-              AllowedOrigins:
+            - AllowedOrigins:
                 - '*'
               AllowedHeaders:
                 - '*'
