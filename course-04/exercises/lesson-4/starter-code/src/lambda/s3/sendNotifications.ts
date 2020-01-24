@@ -31,8 +31,8 @@ const apiGateway = new AWS.ApiGatewayManagementApi(connectionParams)
 // async function processS3Event(s3Event: S3Event) {
 export const handler: S3Handler = async (event: S3Event) => {
 
-async function processS3Event(s3Event: S3Event) {
-  for (const record of s3Event.Records) {
+// async function processS3Event(s3Event: S3Event) {
+//   for (const record of s3Event.Records) {
   for (const record of event.Records) {
     const key = record.s3.object.key
     console.log('Processing S3 item with key: ', key)
