@@ -146,3 +146,4 @@ course-04/exercises/lesson-3/client/src/config.ts
 course-04/exercises/lesson-4/starter-code/.serverless/cloudformation-template-create-stack.json
 course-04/exercises/lesson-4/starter-code/.serverless/cloudformation-template-update-stack.json
 course-04/exercises/lesson-4/starter-code/.serverless/serverless-state.json
+course-04/exercises/lesson-4/client/src/config.ts
