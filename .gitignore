@@ -147,3 +147,5 @@ course-04/exercises/lesson-4/starter-code/.serverless/cloudformation-template-cr
 course-04/exercises/lesson-4/starter-code/.serverless/cloudformation-template-update-stack.json
 course-04/exercises/lesson-4/starter-code/.serverless/serverless-state.json
 course-04/exercises/lesson-4/client/src/config.ts
+course-04/exercises/lesson-5/starter-code/.webpack/service/src/lambda/http/createImage.js
+course-04/exercises/lesson-5/starter-code/.webpack/service/src/lambda/http/createImage.js.map
