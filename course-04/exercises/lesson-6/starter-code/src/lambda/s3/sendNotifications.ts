@@ -1,7 +1,10 @@
 import { SNSHandler, SNSEvent, S3Event } from 'aws-lambda'
 import 'source-map-support/register'
 import * as AWS  from 'aws-sdk'
-import * as AWSXRay from 'aws-xray-sdk'
+//import * as AWSXRay from 'aws-xray-sdk'
+
+const AWSXRay = require('aws-xray-sdk')
+
 const XAWS = AWSXRay.captureAWS(AWS)
 
 const docClient = new XAWS.DynamoDB.DocumentClient()
@@ -12,7 +15,7 @@ const apiId = process.env.API_ID
 
 const connectionParams = {
   apiVersion: "2018-11-29",
-  endpoint: `${apiId}.execute-api.us-east-1.amazonaws.com/${stage}`
+  endpoint: `${apiId}.execute-api.eu-west-1.amazonaws.com/${stage}`
 }
 
 const apiGateway = new AWS.ApiGatewayManagementApi(connectionParams)

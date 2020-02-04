@@ -137,7 +137,7 @@ functions:
             requestModels:
               'application/json': GroupRequest
     deploymentSettings:
-      type: Linear10PercentEvery1Minute
+      type: Linear10PercentEvery1Minute #for the Canary deployment
       alias: Live
 
   GetImages:

@@ -6,20 +6,20 @@ plugins:
   - serverless-reqvalidator-plugin
   - serverless-aws-documentation
   - serverless-plugin-canary-deployments
+  - serverless-plugin-tracing
   - serverless-iam-roles-per-function
-  - serverless-dynamodb-local
-  - serverless-offline
+  #- serverless-dynamodb-local
+  #- serverless-offline
 
-# Uncomment to enable individual packaging
-# package:
-#   individually: true
+package:
+  individually: true
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs10.x
 
   stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'us-east-1'}
+  region: ${opt:region, 'eu-west-1'}
 
   tracing:
     lambda: true
@@ -30,13 +30,18 @@ provider:
     IMAGES_TABLE: Images-${self:provider.stage}
     IMAGE_ID_INDEX: ImageIdIndex
     CONNECTIONS_TABLE: Connections-${self:provider.stage}
-    IMAGES_S3_BUCKET: serverless-udagram-images-${self:provider.stage}
+    IMAGES_S3_BUCKET: serverless-udagram-images-aleks-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
-    THUMBNAILS_S3_BUCKET: serverless-udagram-thumbnail-${self:provider.stage}
+    THUMBNAILS_S3_BUCKET: serverless-udagram-thumbnail-aleks-${self:provider.stage}
     AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
     AUTH_0_SECRET_FIELD: auth0Secret
 
   iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - xray:PutTelemetryRecords
+        - xray:PutTraceSegments
+      Resource: "*"
     - Effect: Allow
       Action:
         - codedeploy:*
@@ -82,16 +87,16 @@ provider:
       Resource: !GetAtt KMSKey.Arn
 
 custom:
-  topicName: imagesTopic-${self:provider.stage}
+  topicName: imagesTopic-aleks-${self:provider.stage}
 
-  serverless-offline:
-    port: 3003
+  # serverless-offline:
+  #   port: 3003
 
-  dynamodb:
-    start:
-      port: 8000
-      inMemory: true
-      migrate: true
+  # dynamodb:   
+  #   start:
+  #     port: 8000
+  #     inMemory: true
+  #     migrate: true
 
   documentation:
     api:
