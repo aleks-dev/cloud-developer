@@ -190,3 +190,8 @@ course-04/exercises/lesson-6/starter-code/.webpack/service/src/lambda/websocket/
 course-04/exercises/lesson-6/starter-code/.webpack/service/src/lambda/websocket/connect.js.map
 course-04/exercises/lesson-6/starter-code/.webpack/service/src/lambda/websocket/disconnect.js
 course-04/exercises/lesson-6/starter-code/.webpack/service/src/lambda/websocket/disconnect.js.map
+course-04/exercises/lesson-6/starter-code/.serverless/cloudformation-template-create-stack.json
+course-04/exercises/lesson-6/starter-code/.serverless/cloudformation-template-update-stack.json
+course-04/exercises/lesson-6/starter-code/.serverless/serverless-state.json
+course-04/exercises/lesson-6/starter-code/report.20200204.102711.13576.0.001.json
+course-04/exercises/lesson-6/starter-code/report.20200204.104213.11696.0.001.json
