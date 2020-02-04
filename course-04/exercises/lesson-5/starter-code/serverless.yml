@@ -8,19 +8,19 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs10.x
 
   stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'us-east-1'}
+  region: ${opt:region, 'eu-west-1'}
 
   environment:
     GROUPS_TABLE: Groups-${self:provider.stage}
     IMAGES_TABLE: Images-${self:provider.stage}
     IMAGE_ID_INDEX: ImageIdIndex
     CONNECTIONS_TABLE: Connections-${self:provider.stage}
-    IMAGES_S3_BUCKET: serverless-udagram-images-${self:provider.stage}
+    IMAGES_S3_BUCKET: serverless-udagram-images-aleks-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
-    THUMBNAILS_S3_BUCKET: serverless-udagram-thumbnail-${self:provider.stage}
+    THUMBNAILS_S3_BUCKET: serverless-udagram-thumbnail-aleks-${self:provider.stage}
     AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
     AUTH_0_SECRET_FIELD: auth0Secret
 
@@ -65,7 +65,7 @@ provider:
       Resource: !GetAtt KMSKey.Arn
 
 custom:
-  topicName: imagesTopic-${self:provider.stage}
+  topicName: imagesTopic-aleks-${self:provider.stage}
   documentation:
     api:
       info:

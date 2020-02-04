@@ -8,10 +8,10 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs10.x
 
   stage: ${opt:stage, 'dev'}
-  region: ${opt:region, 'us-east-1'}
+  region: ${opt:region, 'eu-west-1'}
 
   environment:
     GROUPS_TABLE: Groups-${self:provider.stage}
@@ -50,6 +50,8 @@ custom:
         contentType: application/json
         schema: ${file(models/create-image-request.json)}
 
+
+        
 functions:
 
   GetGroups:
@@ -122,9 +124,9 @@ resources:
             AttributeType: S
         KeySchema:
           - AttributeName: groupId
-            KeyType: HASH
+            KeyType: HASH #Partition Key
           - AttributeName: timestamp
-            KeyType: RANGE
+            KeyType: RANGE #Sort Key
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.IMAGES_TABLE}
         GlobalSecondaryIndexes:
