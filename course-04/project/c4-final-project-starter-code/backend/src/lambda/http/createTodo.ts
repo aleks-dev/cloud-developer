@@ -6,6 +6,9 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
 import { createTodo } from '../../businessLogic/todos'
 import { getUserId } from '../utils'
+import { createLogger } from '../../utils/logger'
+
+const logger = createLogger('auth')
 
 
 export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -16,18 +19,22 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
 
   try {
     const newItem = await createTodo(newTodo, userId)
+    
+    logger.info('Method: createTodo, statusCode: 201')
 
     return {
       statusCode: 201,
       body: JSON.stringify({
-        newItem
+        item: newItem
       })
     }
-  } catch (e) {
+  } catch (err) {
+      logger.error('Method: createTodo, statusCode: 500, error: ' + JSON.stringify({ err }))
+
       return {
         statusCode: 500,
         body: JSON.stringify({
-          error: "Error while creating the new Todo item:" + JSON.stringify({e})
+          error: "Error while creating the new Todo item:" + JSON.stringify({ err })
         })
       }
   }

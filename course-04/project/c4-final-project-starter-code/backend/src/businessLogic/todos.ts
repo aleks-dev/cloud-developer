@@ -3,27 +3,19 @@ import { TodoItem } from '../models/TodoItem'
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { TodosRepo } from '../data/todosRepo'
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
-import { createLogger } from '../utils/logger'
 
-const bucketName = process.env.ATTACHMENTS_S3_BUCKET
-const todoIdIndex = process.env.INDEX_NAME
-const urlExpiration = Number(process.env.SIGNED_URL_EXPIRATION)
 const todosRepo = new TodosRepo()
-const logger = createLogger('auth')
 
 
 export async function getAllTodos(userId: string)
 : Promise<TodoItem[]> {
-  logger.info('getAllTodos userId: ' + userId)
-
-  return todosRepo.getAllTodos(todoIdIndex, userId)
+  return todosRepo.getAllTodos(userId)
 }
 
 export async function createTodo(
   createTodoRequest: CreateTodoRequest,
   userId: string
 ): Promise<TodoItem> {
-  logger.info('createTodo userId: ' + userId)
 
   const itemId = uuid.v4()
 
@@ -33,50 +25,57 @@ export async function createTodo(
     todoName: createTodoRequest.todoName,
     dueDate: createTodoRequest.dueDate,
     createdAt: new Date().toISOString(),
-    done: false
-    //attachmentUrl: createTodoRequest.attachmentUrl - DOESN'T EXIST IN THE CreateTodoRequest, THEREFORE I ASSUME IT WILL NOT BE PASSED ON CREATION.
+    done: false,
+    attachmentUrl: null //DOESN'T EXIST IN THE CreateTodoRequest, THEREFORE I ASSUME IT WILL NOT BE PASSED ON CREATION.
   })
 }
 
+
 export async function updateTodo(
     todoId: string,
+    userId: string,
     updateTodoRequest: UpdateTodoRequest,
-    userId: string
   ) {
-    logger.info('updateTodo userId: ' + userId)
-
     await todosRepo.updateTodo(todoId,
-      {
-        todoName: updateTodoRequest.todoName,
-        dueDate: updateTodoRequest.dueDate,
-        done: updateTodoRequest.done
-      },
-      userId)
+                                userId,
+                                {
+                                  todoName: updateTodoRequest.todoName,
+                                  dueDate: updateTodoRequest.dueDate,
+                                  done: updateTodoRequest.done
+                                })
   }
+
+  export async function updateAttachmentUrl(
+    todoId: string, 
+    userId: string) 
+  {
+    await todosRepo.updateAttachmentUrl(todoId, userId)
+  }
+
 
   export async function deleteTodo(
     todoId: string,
     userId: string
-  ) {
-    logger.info('deleteTodo userId: ' + userId)
-  
+  ) {  
     await todosRepo.deleteTodo(todoId, userId)
   }
+
 
   export async function getUploadUrl(
     todoId: string,
     userId: string
-  ): Promise<String> {
-    logger.info('getUploadUrl userId: ' + userId)
+  ): Promise<String> 
+  {
+    userId = userId; //TONOTICE: JUST A DUMMY ASSIGNMENT, TO AVOID COMPLAINMENTS BY TS DURING COMPILE-TIME.
 
-    return await todosRepo.getUploadUrl(bucketName, todoId, userId, urlExpiration)
+    return await todosRepo.getUploadUrl(todoId, userId)
   }
+
 
   export async function todoExists(
     todoId: string,
     userId: string
-  ): Promise<Boolean> {
-    logger.info('todoExists userId: ' + userId)
-
+  ): Promise<Boolean> 
+  {
     return await todosRepo.todoExists(todoId, userId)
   }

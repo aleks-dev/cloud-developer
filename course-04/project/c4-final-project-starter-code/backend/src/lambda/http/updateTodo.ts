@@ -6,6 +6,9 @@ import { cors } from 'middy/middlewares'
 import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
 import { updateTodo, todoExists } from '../../businessLogic/todos'
 import { getUserId } from '../utils'
+import { createLogger } from '../../utils/logger'
+
+const logger = createLogger('auth')
 
 
 export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -14,8 +17,10 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
 
   const todoId = event.pathParameters.todoId
   const validTodoId = await todoExists(todoId, userId)
-
+  
   if (!validTodoId) {
+    logger.info('Method: updateTodo, statusCode: 404, error: Todo item does not exist')
+
     return {
       statusCode: 404,
       body: JSON.stringify({
@@ -25,25 +30,29 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
   }
 
   const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
-
+  
   try {
     const updatedItem = await updateTodo(
       todoId,
-      updatedTodo,
-      userId
+      userId,
+      updatedTodo
     )
+
+    logger.info('Method: updateTodo statusCode: 200')
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        updatedItem
+        item: updatedItem
       })
     }
-  } catch (e) {
+  } catch (err) {
+    logger.error('Method: updateTodo statusCode: 500, error: ' + JSON.stringify({ err }))
+
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: "Error while updating the Todo item: " + JSON.stringify({e})
+        error: "Error while updating the Todo item: " + JSON.stringify({ err })
       })
     }
   }
