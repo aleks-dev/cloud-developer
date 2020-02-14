@@ -48,7 +48,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     try {
       const dueDate = this.calculateDueDate()
       const newTodo = await createTodo(this.props.auth.getIdToken(), {
-        name: this.state.newTodoName,
+        todoName: this.state.newTodoName,
         dueDate
       })
       this.setState({
@@ -75,7 +75,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     try {
       const todo = this.state.todos[pos]
       await patchTodo(this.props.auth.getIdToken(), todo.todoId, {
-        name: todo.name,
+        todoName: todo.todoName,
         dueDate: todo.dueDate,
         done: !todo.done
       })
@@ -169,7 +169,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
                 />
               </Grid.Column>
               <Grid.Column width={10} verticalAlign="middle">
-                {todo.name}
+                {todo.todoName}
               </Grid.Column>
               <Grid.Column width={3} floated="right">
                 {todo.dueDate}

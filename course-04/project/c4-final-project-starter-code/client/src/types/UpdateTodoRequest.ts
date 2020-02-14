@@ -1,5 +1,5 @@
 export interface UpdateTodoRequest {
-  name: string
+  todoName: string
   dueDate: string
   done: boolean
 }

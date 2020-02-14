@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { parseUserId } from "../auth/utils";
+import { JwtToken } from "../auth/JwtToken";
+import { decode } from "jsonwebtoken";
 
 /**
  * Get a user id from an API Gateway event
@@ -13,4 +14,10 @@ export function getUserId(event: APIGatewayProxyEvent): string {
   const jwtToken = split[1]
 
   return parseUserId(jwtToken)
+}
+
+function parseUserId(jwtToken: string): string {
+  const decodedJwt = decode(jwtToken) as JwtToken
+
+  return decodedJwt.sub
 }
