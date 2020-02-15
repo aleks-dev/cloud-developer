@@ -17,7 +17,7 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
   try {
     const result = await getAllTodos(userId)
 
-    if (result && result.length !== 0) {
+    if (result) {
       logger.info('Method: getTodos statusCode: 200')
 
       return {
