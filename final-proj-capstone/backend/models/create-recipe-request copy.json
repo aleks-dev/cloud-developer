@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "ingredient",
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "string"
+      },
+      "recipeName": {
+        "type": "string"
+      },
+      "recipeDescription": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "userId",
+      "recipeName"
+    ],
+    "additionalProperties": true
+  }
+  

@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "ingredient",
+    "type": "object",
+    "properties": {
+      "quantity": {
+        "type": "string"
+      },
+      "boughtDate": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "quantity"
+    ],
+    "additionalProperties": false
+  }
+  

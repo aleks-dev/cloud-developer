@@ -1,0 +1,434 @@
+service:
+  name: serverless-recipes-app
+
+plugins:
+  - serverless-webpack
+  - serverless-iam-roles-per-function
+  - serverless-plugin-tracing
+  - serverless-reqvalidator-plugin
+
+#
+package:
+  individually: true
+  
+#
+provider:
+  name: aws
+  runtime: nodejs10.x
+
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-west-1'}
+
+  tracing: 
+    apiGateway: true
+    lambda: true
+    
+  environment:
+    RECIPES_TABLE: Recipes-aleks-${self:provider.stage}
+    #RECIPE_DESCR_INDEX: RecipeDescrIndex      TONOTICE: FOR SEARCH-THROUGH-DESCRIPTIONS PURPOSES
+    INGREDIENTS_TABLE: Ingredients-aleks-${self:provider.stage}
+    INGREDIENT_ID_INDEX: IngredientIdIndex
+    SIGNED_URL_EXPIRATION: 300
+    PHOTOS_S3_BUCKET: serverless-ingredient-photos-aleks-${self:provider.stage}
+    AUTH_0_SECRET_ID: Auth0Secret-aleks-${self:provider.stage}
+    AUTH_0_SECRET_FIELD: auth0Secret
+  
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - xray:PutTelemetryRecords
+        - xray:PutTraceSegments
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource: !Ref Auth0Secret
+    - Effect: Allow
+      Action:
+        - kms:Decrypt
+      Resource: !GetAtt KMSKey.Arn
+
+#  
+tracing:
+  lambda: true
+  apiGateway: true
+
+
+#
+custom:
+  documentation:
+    api:
+      info:
+        version: v1.0.0
+        title: Udagram API
+        description: Serverless application for keeping track of Recipes lists
+    models:
+      - name: CreateRecipeRequest
+        contentType: application/json
+        schema: ${file(models/create-recipe-request.json)}
+      - name: UpdateRecipeRequest
+        contentType: application/json
+        schema: ${file(models/update-recipe-request.json)}
+      - name: CreateIngredientRequest
+        contentType: application/json
+        schema: ${file(models/create-ingredient-request.json)}
+      - name: UpdateIngredientRequest
+        contentType: application/json
+        schema: ${file(models/update-ingredient-request.json)}
+
+#
+functions:
+
+  Auth:
+    handler: src/lambda/auth/auth0Authorizer.handler
+
+    
+  GetRecipes:
+    handler: src/lambda/http/recipes/getRecipes.handler
+    events:
+      - http:
+          method: get
+          path: recipes
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.RECIPES_TABLE}
+
+
+  GetRecipe:
+    handler: src/lambda/http/recipes/getRecipe.handler
+    events:
+      - http:
+          method: get
+          path: recipes/{recipeId}
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.RECIPES_TABLE}
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.INGREDIENTS_TABLE}
+
+
+  CreateRecipe:
+    handler: src/lambda/http/recipes/createRecipe.handler
+    events:
+      - http:
+          method: post
+          path: recipes
+          cors: true
+          authorizer: Auth
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Create a new recipe
+            description: Create a new recipe
+            requestModels:
+              'application/json': CreateRecipeRequest
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.RECIPES_TABLE}
+
+  
+  UpdateRecipe:
+    handler: src/lambda/http/recipes/updateRecipe.handler
+    events:
+      - http:
+          method: patch
+          authorizer: Auth
+          path: recipes/{recipeId}
+          cors: true
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Update an existing Recipe item
+            description: Update an existing Recipe item
+            requestModels:
+              'application/json': UpdateRecipeRequest
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.RECIPES_TABLE}
+          
+
+  DeleteRecipe:
+    handler: src/lambda/http/recipes/deleteRecipe.handler
+    events:
+      - http:
+          method: delete
+          authorizer: Auth
+          path: recipes/{recipeId}
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.RECIPES_TABLE}
+
+
+  GetIngredients:
+    handler: src/lambda/http/ingredients/getIngredients.handler
+    events:
+      - http:
+          method: get
+          path: ingredients
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.INGREDIENTS_TABLE}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.INGREDIENTS_TABLE}/index/${self:provider.environment.INGREDIENT_ID_INDEX}
+        
+
+  CreateIngredient:
+    handler: src/lambda/http/ingredients/createIngredient.handler
+    events:
+      - http:
+          method: post
+          authorizer: Auth
+          path: ingredients
+          cors: true
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Create a new Ingredient item
+            description: Create a new Ingredient item
+            requestModels:
+              'application/json': CreateIngredientRequest
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.INGREDIENTS_TABLE}
+
+ 
+  UpdateIngredient:
+    handler: src/lambda/http/recipes/updateIngredient.handler
+    events:
+      - http:
+          method: patch
+          authorizer: Auth
+          path: ingredients/{ingredientId}
+          cors: true
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Update an existing Ingredient item
+            description: Update an existing Ingredient item
+            requestModels:
+              'application/json': UpdateIngredientRequest
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.INGREDIENTS_TABLE}
+                
+      
+  DeleteIngredient:
+    handler: src/lambda/http/ingredients/deleteIngredient.handler
+    events:
+      - http:
+          method: delete
+          authorizer: Auth
+          path: ingredients/{ingredientId}
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.INGREDIENTS_TABLE}
+      
+
+  GenerateUploadUrl:
+    handler: src/lambda/http/ingredients/generateUploadUrl.handler
+    events:
+      - http:
+          method: post
+          path: ingredients/{ingredientId}/photo
+          authorizer: Auth
+          cors: true          
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.INGREDIENTS_TABLE}
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+          - s3:GetObject
+        Resource: arn:aws:s3:::${self:provider.environment.PHOTOS_S3_BUCKET}/*
+      
+
+
+resources:
+  Resources:
+    GatewayResponseDefault4XX:
+      Type: AWS::ApiGateway::GatewayResponse
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,PATCH,POST,DELETE'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: ApiGatewayRestApi
+
+
+    RequestBodyValidator:
+      Type: AWS::ApiGateway::RequestValidator
+      Properties:
+        Name: 'request-body-validator'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
+
+#DynamoDB Tables      
+    RecipesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: recipeId
+            AttributeType: S
+          - AttributeName: recipeDescription
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+                KeyType: HASH
+          - AttributeName: recipeId
+                KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.RECIPES_TABLE}
+        # GlobalSecondaryIndexes:
+        #   - IndexName: ${self:provider.environment.RECIPE_DESCR_INDEX}
+        #     KeySchema:
+        #       - AttributeName: userId
+        #         KeyType: HASH
+        #       - AttributeName: recipeDescription
+        #         KeyType: RANGE
+        #     Projection:
+        #       ProjectionType: ALL # What attributes will be copied to an index
+
+              
+    IngredientsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: recipeId
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: ingredientId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: recipeId
+            KeyType: HASH
+          - AttributeName: ingredientId
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.INGREDIENTS_TABLE}
+        #TONOTICE: FOR SEARCH-THROUGH-NAMES PURPOSES
+        # GlobalSecondaryIndexes:
+        #   - IndexName: ${self:provider.environment.INGREDIENT_NAME_INDEX}
+        #     KeySchema:
+        #       - AttributeName: userId
+        #         KeyType: HASH
+        #       - AttributeName: ingredientName
+        #         KeyType: RANGE
+        #     Projection:
+        #       ProjectionType: ALL
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.INGREDIENT_ID_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: ingredientId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL # What attributes will be copied to an index
+          
+#S3 Bucket
+    PhotosBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.PHOTOS_S3_BUCKET}
+        CorsConfiguration:
+          CorsRules:
+            -
+              AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              MaxAge: 3000        
+
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        PolicyDocument:
+          Id: MyPolicy
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadForGetBucketObjects
+              Effect: Allow
+              Principal: '*'
+              Action: 's3:GetObject'
+              Resource: 'arn:aws:s3:::${self:provider.environment.PHOTOS_S3_BUCKET}/*'
+        Bucket: !Ref PhotosBucket
+
+#KMSKey
+    KMSKey:
+      Type: AWS::KMS::Key
+      Properties:
+        Description: KMS key to encrypt Auth0 secret
+        KeyPolicy:
+          Version: '2012-10-17'
+          Id: key-default-1
+          Statement:
+            - Sid: Allow administration of the key
+              Effect: Allow
+              Principal:
+                AWS:
+                  Fn::Join:
+                  - ':'
+                  - - 'arn:aws:iam:'
+                    - Ref: AWS::AccountId
+                    - 'root'
+              Action:
+                - 'kms:*'
+              Resource: '*'
+
+    KMSKeyAlias:
+      Type: AWS::KMS::Alias
+      Properties:
+        AliasName: alias/auth0Key-aleks-${self:provider.stage}
+        TargetKeyId: !Ref KMSKey
+
+#Auth0Secret     
+    Auth0Secret:
+      Type: AWS::SecretsManager::Secret
+      Properties:
+        Name: ${self:provider.environment.AUTH_0_SECRET_ID}
+        Description: Auth0 secret
+        KmsKeyId: !Ref KMSKey
