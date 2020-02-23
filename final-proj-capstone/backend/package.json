@@ -1,0 +1,36 @@
+{
+  "name": "serverless-memo-app",
+  "version": "1.0.0",
+  "description": "Serverless MEMO image app",
+  "dependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/http-errors": "^1.6.3",
+    "aws-xray-sdk": "^2.5.0",
+    "axios": "^0.19.2",
+    "http-errors": "^1.7.3",
+    "jsonwebtoken": "^8.5.1",
+    "lodash.set": "^4.3.2",
+    "middy": "^0.27.1",
+    "request": "^2.88.0",
+    "serverless-plugin-tracing": "^2.0.0",
+    "source-map-support": "^0.5.16",
+    "uuid": "^3.4.0",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.40",
+    "@types/jsonwebtoken": "^8.3.7",
+    "@types/node": "^10.17.14",
+    "aws-sdk": "^2.614.0",
+    "serverless-aws-documentation": "^1.1.0",
+    "serverless-iam-roles-per-function": "^1.0.4",
+    "serverless-plugin-canary-deployments": "^0.4.8",
+    "serverless-reqvalidator-plugin": "^1.0.3",
+    "serverless-webpack": "^5.3.1",
+    "ts-loader": "^5.4.5",
+    "typescript": "^3.7.5",
+    "webpack": "^4.41.5"
+  },
+  "author": "Ivan Mushketyk",
+  "license": "MIT"
+}

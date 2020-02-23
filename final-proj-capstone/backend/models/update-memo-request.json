@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "memo",
+    "type": "object",
+    "properties": {
+      "memoName": {
+        "type": "string"
+      },
+      "dueDate": {
+        "type": "string"
+      },
+      "done": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "memoName",
+      "dueDate",
+      "done"
+    ],
+    "additionalProperties": false
+  }
+  
