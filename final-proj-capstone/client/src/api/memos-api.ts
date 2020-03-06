@@ -2,7 +2,7 @@ import { apiEndpoint } from '../config'
 import { Memo } from '../types/Memo';
 import { CreateMemoRequest } from '../types/CreateMemoRequest';
 import Axios from 'axios'
-import { UpdateMemoRequest } from '../types/UpdateMemoRequest';
+
 
 export async function getMemos(idToken: string): Promise<Memo[]> {
   console.log('Fetching memos')
@@ -11,8 +11,27 @@ export async function getMemos(idToken: string): Promise<Memo[]> {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`
-    },
+    }
   })
+  console.log('Memos:', response.data)
+  return response.data.items
+}
+
+export async function searchMemos(idToken: string, searchPhrase: string): Promise<Memo[]> {
+  console.log('Searching memos')
+
+  const searchPhraseAccommodated = searchPhrase.replace(' ', '+')
+  
+  const response = await Axios.get(`${apiEndpoint}/memos/search`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    },
+    params: {
+      q: searchPhraseAccommodated
+    }
+  })
+
   console.log('Memos:', response.data)
   return response.data.items
 }
@@ -28,19 +47,6 @@ export async function createMemo(
     }
   })
   return response.data.item
-}
-
-export async function patchMemo(
-  idToken: string,
-  memoId: string,
-  updatedMemo: UpdateMemoRequest
-): Promise<void> {
-  await Axios.patch(`${apiEndpoint}/memos/${memoId}`, JSON.stringify(updatedMemo), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${idToken}`
-    }
-  })
 }
 
 export async function deleteMemo(

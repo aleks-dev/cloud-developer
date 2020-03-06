@@ -14,7 +14,7 @@ import {
   Loader
 } from 'semantic-ui-react'
 
-import { createMemo, deleteMemo, getMemos, patchMemo } from '../api/memos-api'
+import { createMemo, deleteMemo, getMemos, searchMemos } from '../api/memos-api'
 import Auth from '../auth/Auth'
 import { Memo } from '../types/Memo'
 
@@ -25,15 +25,21 @@ interface MemosProps {
 
 interface MemosState {
   memos: Memo[]
+  searchMemoPhrase: string
   newMemoName: string
   loadingMemos: boolean
 }
 
 export class Memos extends React.PureComponent<MemosProps, MemosState> {
   state: MemosState = {
+    searchMemoPhrase: '',
     memos: [],
     newMemoName: '',
     loadingMemos: true
+  }
+
+  handleMemoSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ searchMemoPhrase: event.target.value })
   }
 
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,14 +49,31 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
   onEditButtonClick = (memoId: string) => {
     this.props.history.push(`/memos/${memoId}/edit`)
   }
+  
+  
+  onMemoSearch = async (event: React.ChangeEvent<HTMLButtonElement>) => {
+    try {
+      const foundMemos = await searchMemos(this.props.auth.getIdToken(), 
+                                           this.state.searchMemoPhrase)
+
+      this.setState({
+        memos: foundMemos,
+        searchMemoPhrase: ''
+      })
+    } catch {
+      alert('Memo search failed')
+    }
+  }
 
   onMemoCreate = async (event: React.ChangeEvent<HTMLButtonElement>) => {
     try {
-      const dueDate = this.calculateDueDate()
+      const dateCreated = dateFormat((new Date()).getDate(), 'yyyy-mm-dd') as string
+      
       const newMemo = await createMemo(this.props.auth.getIdToken(), {
         memoName: this.state.newMemoName,
-        dueDate
+        createdDate: dateCreated
       })
+
       this.setState({
         memos: [...this.state.memos, newMemo],
         newMemoName: ''
@@ -63,6 +86,7 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
   onMemoDelete = async (memoId: string) => {
     try {
       await deleteMemo(this.props.auth.getIdToken(), memoId)
+
       this.setState({
         memos: this.state.memos.filter(memo => memo.memoId != memoId)
       })
@@ -71,23 +95,6 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
     }
   }
 
-  onMemoCheck = async (pos: number) => {
-    try {
-      const memo = this.state.memos[pos]
-      await patchMemo(this.props.auth.getIdToken(), memo.memoId, {
-        memoName: memo.memoName,
-        dueDate: memo.dueDate,
-        done: !memo.done
-      })
-      this.setState({
-        memos: update(this.state.memos, {
-          [pos]: { done: { $set: !memo.done } }
-        })
-      })
-    } catch {
-      alert('Memo deletion failed')
-    }
-  }
 
   async componentDidMount() {
     try {
@@ -106,10 +113,36 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
       <div>
         <Header as="h1">MEMOs</Header>
 
+        {this.renderSearchMemoInput()}
+
         {this.renderCreateMemoInput()}
 
         {this.renderMemos()}
       </div>
+    )
+  }
+
+  renderSearchMemoInput() {
+    return (
+      <Grid.Row>
+        <Grid.Column width={16}>
+          <Input
+            action={{
+              color: 'green',
+              labelPosition: 'right',
+              icon: 'search',
+              content: 'Search Memos',
+              onClick: this.onMemoSearch
+            }}
+            fluid
+            actionPosition="left"
+            onChange={this.handleMemoSearch}
+          />
+        </Grid.Column>
+        <Grid.Column width={16}>
+          <Divider />
+        </Grid.Column>
+      </Grid.Row>
     )
   }
 
@@ -122,7 +155,7 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
               color: 'teal',
               labelPosition: 'left',
               icon: 'add',
-              content: 'New task',
+              content: 'New Memo',
               onClick: this.onMemoCreate
             }}
             fluid
@@ -162,17 +195,8 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
         {this.state.memos.map((memo, pos) => {
           return (
             <Grid.Row key={memo.memoId}>
-              <Grid.Column width={1} verticalAlign="middle">
-                <Checkbox
-                  onChange={() => this.onMemoCheck(pos)}
-                  checked={memo.done}
-                />
-              </Grid.Column>
               <Grid.Column width={10} verticalAlign="middle">
                 {memo.memoName}
-              </Grid.Column>
-              <Grid.Column width={3} floated="right">
-                {memo.dueDate}
               </Grid.Column>
               <Grid.Column width={1} floated="right">
                 <Button
@@ -192,23 +216,16 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
                   <Icon name="delete" />
                 </Button>
               </Grid.Column>
-              {memo.photoUrl && (
-                <Image src={memo.photoUrl} size="small" wrapped />
-              )}
               <Grid.Column width={16}>
-                <Divider />
+                  {memo.photoUrl && (
+                    <Image src={memo.photoUrl} size="small" wrapped />
+                    )}
+                  <Divider />
               </Grid.Column>
             </Grid.Row>
           )
         })}
       </Grid>
     )
-  }
-
-  calculateDueDate(): string {
-    const date = new Date()
-    date.setDate(date.getDate() + 7)
-
-    return dateFormat(date, 'yyyy-mm-dd') as string
   }
 }

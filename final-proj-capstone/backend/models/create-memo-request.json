@@ -6,13 +6,13 @@
       "memoName": {
         "type": "string"
       },
-      "dueDate": {
+      "createdDate": {
         "type": "string"
       }
     },
     "required": [
       "memoName",
-      "dueDate"
+      "createdDate"
     ],
     "additionalProperties": true
   }

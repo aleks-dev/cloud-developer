@@ -8,7 +8,7 @@ import { createMemo } from '../../businessLogic/memos'
 import { getUserId } from '../utils'
 import { createLogger } from '../../utils/logger'
 
-const logger = createLogger('auth')
+const logger = createLogger('Create Memo')
 
 
 export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {

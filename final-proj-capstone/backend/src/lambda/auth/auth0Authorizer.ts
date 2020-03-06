@@ -17,11 +17,10 @@ export const handler = async (
   
   try {
     const decodedToken = verifyToken(event.authorizationToken)
-    //const jwtToken = await verifyToken(event.authorizationToken)
+
     logger.info('User was authorized' + JSON.stringify(decodedToken))
 
     return {
-      //principalId: jwtToken.sub,
       principalId: decodedToken.sub,
       policyDocument: {
         Version: '2012-10-17',

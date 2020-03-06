@@ -3,5 +3,5 @@
  */
 export interface CreateMemoRequest {
   memoName: string
-  dueDate: string
+  createdDate: string
 }

@@ -1,21 +1,25 @@
 import * as uuid from 'uuid'
-import { MemoItem } from '../models/MemoItem'
+import { Memo } from '../models/Memo'
 import { CreateMemoRequest } from '../requests/CreateMemoRequest'
 import { MemosRepo } from '../data/memosRepo'
-import { UpdateMemoRequest } from '../requests/UpdateMemoRequest'
 
 const memosRepo = new MemosRepo()
 
 
 export async function getAllMemos(userId: string)
-: Promise<MemoItem[]> {
+: Promise<Memo[]> {
   return await memosRepo.getAllMemos(userId)
+}
+
+export async function searchMemos(userId: string, searchPhrase: string, esHost: string)
+: Promise<string> { //Promise<Memo[]> {
+  return await memosRepo.searchMemos(userId, searchPhrase, esHost)
 }
 
 export async function createMemo(
   createMemoRequest: CreateMemoRequest,
   userId: string
-): Promise<MemoItem> {
+): Promise<Memo> {
 
   const itemId = uuid.v4()
 
@@ -23,27 +27,10 @@ export async function createMemo(
     memoId: itemId,
     userId: userId,
     memoName: createMemoRequest.memoName,
-    dueDate: createMemoRequest.dueDate,
-    createdAt: new Date().toISOString(),
-    done: false,
-    photoUrl: null //DOESN'T EXIST IN THE CreateMemoRequest, THEREFORE I ASSUME IT WILL NOT BE PASSED ON CREATION.
+    createdDate: new Date().toISOString(),
+    photoUrl: null
   })
 }
-
-
-export async function updateMemo(
-    memoId: string,
-    userId: string,
-    updateMemoRequest: UpdateMemoRequest,
-  ) {
-    await memosRepo.updateMemo(memoId,
-                                userId,
-                                {
-                                  memoName: updateMemoRequest.memoName,
-                                  dueDate: updateMemoRequest.dueDate,
-                                  done: updateMemoRequest.done
-                                })
-  }
 
   export async function updatePhotoUrl(
     memoId: string, 

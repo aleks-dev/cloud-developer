@@ -6,6 +6,7 @@ plugins:
   - serverless-iam-roles-per-function
   - serverless-plugin-tracing
   - serverless-reqvalidator-plugin
+  - serverless-aws-documentation
 
 #
 package:
@@ -25,7 +26,7 @@ provider:
     
   environment:
     MEMOS_TABLE: Memos-${self:provider.stage}
-    INDEX_NAME: MemoIdIndex
+    MEMO_NAME_INDEX: MemoIdIndex
     SIGNED_URL_EXPIRATION: 300
     PHOTOS_S3_BUCKET: serverless-memo-photos-aleks-${self:provider.stage}
     AUTH_0_SECRET_ID: Auth0Secret-aleks-${self:provider.stage}
@@ -64,15 +65,36 @@ custom:
       - name: CreateMemoRequest
         contentType: application/json
         schema: ${file(models/create-memo-request.json)}
-      - name: UpdateMemoRequest
-        contentType: application/json
-        schema: ${file(models/update-memo-request.json)}
 
 #
 functions:
 
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
+
+  SearchMemos:
+    environment:
+      ES_ENDPOINT: !GetAtt MemosSearch.DomainEndpoint
+    handler: src/lambda/http/searchMemos.handler
+    events:
+      - http:
+          method: get
+          path: memos/search
+          cors: true
+      - http:
+          method: post
+          path: /MemoIdIndex/GSI/_search
+          cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEMOS_TABLE}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEMOS_TABLE}/index/${self:provider.environment.MEMO_NAME_INDEX}
+
 
   GetMemos:
     handler: src/lambda/http/getMemos.handler
@@ -89,8 +111,9 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:Query
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEMOS_TABLE}/index/${self:provider.environment.INDEX_NAME}
-  
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEMOS_TABLE}/index/${self:provider.environment.MEMO_NAME_INDEX}
+      
+
   CreateMemo:
     handler: src/lambda/http/createMemo.handler
     events:
@@ -110,28 +133,6 @@ functions:
         Action:
           - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEMOS_TABLE}
-
-  UpdateMemo:
-    handler: src/lambda/http/updateMemo.handler
-    events:
-      - http:
-          method: patch
-          authorizer: Auth
-          path: memos/{memoId}
-          cors: true
-          reqValidatorName: RequestBodyValidator
-          documentation:
-            summary: Update an existing Memo item
-            description: Update an existing Memo item
-            requestModels:
-              'application/json': UpdateMemoRequest
-    iamRoleStatements:
-      - Effect: Allow
-        Action:
-          - dynamodb:GetItem
-          - dynamodb:UpdateItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEMOS_TABLE}
-          
 
   DeleteMemo:
     handler: src/lambda/http/deleteMemo.handler
@@ -168,6 +169,15 @@ functions:
           - s3:GetObject
         Resource: arn:aws:s3:::${self:provider.environment.PHOTOS_S3_BUCKET}/*
       
+  SyncWithElasticsearch:
+    environment:
+      ES_ENDPOINT: !GetAtt MemosSearch.DomainEndpoint
+    handler: src/lambda/dynamoDb/elasticSearchSync.handler
+    events:
+      - stream:
+          type: dynamodb
+          arn: !GetAtt MemosTable.StreamArn
+
 
 
 resources:
@@ -199,7 +209,7 @@ resources:
         AttributeDefinitions:
           - AttributeName: userId
             AttributeType: S
-          - AttributeName: createdAt
+          - AttributeName: memoName
             AttributeType: S
           - AttributeName: memoId
             AttributeType: S
@@ -209,13 +219,15 @@ resources:
           - AttributeName: memoId
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
         TableName: ${self:provider.environment.MEMOS_TABLE}
-        LocalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.INDEX_NAME}
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.MEMO_NAME_INDEX}
             KeySchema:
               - AttributeName: userId
                 KeyType: HASH
-              - AttributeName: createdAt
+              - AttributeName: memoName
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL # What attributes will be copied to an index
@@ -252,6 +264,34 @@ resources:
               Action: 's3:GetObject'
               Resource: 'arn:aws:s3:::${self:provider.environment.PHOTOS_S3_BUCKET}/*'
         Bucket: !Ref PhotosBucket
+
+        
+    MemosSearch:
+      Type: AWS::Elasticsearch::Domain
+      Properties:
+        ElasticsearchVersion: '6.3'
+        DomainName: memos-search-${self:provider.stage}
+        ElasticsearchClusterConfig:
+          DedicatedMasterEnabled: false
+          InstanceCount: '1'
+          ZoneAwarenessEnabled: false
+          InstanceType: t2.small.elasticsearch
+        EBSOptions:
+          EBSEnabled: true
+          Iops: 0
+          VolumeSize: 10
+          VolumeType: 'gp2'
+
+        AccessPolicies:
+          Version: '2012-10-17'
+          Statement:
+            -
+              Effect: Allow
+              Principal:
+                AWS: '*'
+              Action: 'es:*'
+              Resource: '*'
+
 
     KMSKey:
       Type: AWS::KMS::Key

@@ -1,14 +1,18 @@
 import * as AWS from 'aws-sdk'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
-import { MemoItem } from '../models/MemoItem'
-import { MemoUpdate } from '../models/MemoUpdate'
+import { Memo } from '../models/Memo'
+import * as httpAwsEs from 'http-aws-es'
+import { createLogger } from '../utils/logger'
+import * as elasticsearch from 'elasticsearch'
 
 const AWSXRay = require('aws-xray-sdk')
 const XAWS = AWSXRay.captureAWS(AWS)
 
 const bucketName = process.env.PHOTOS_S3_BUCKET
-const memoIdIndex = process.env.INDEX_NAME
+const memoIdIndex = process.env.MEMO_NAME_INDEX
 const urlExpiration = Number(process.env.SIGNED_URL_EXPIRATION)
+
+const logger = createLogger('memosRepo')
 
 
 export class MemosRepo {
@@ -19,7 +23,7 @@ export class MemosRepo {
   }
 
 
-  async getAllMemos(userId: string): Promise<MemoItem[]> {
+  async getAllMemos(userId: string): Promise<Memo[]> {
     try {
       const result = await this.docClient.query({
         TableName: this.memosTable,
@@ -31,7 +35,7 @@ export class MemosRepo {
       }).promise()
 
       const items = result.Items
-      return items as MemoItem[]
+      return items as Memo[]
 
     }
     catch (err) {
@@ -40,7 +44,49 @@ export class MemosRepo {
   }
 
 
-  async createMemo(memo: MemoItem): Promise<MemoItem> {
+  async searchMemos(userId: string, searchPhrase: string, esHost: string): Promise<string> { //Promise<Memo[]> { //
+    userId = userId;
+
+    try {
+      const client = new elasticsearch.Client({ 
+        hosts: [ esHost ],
+        connectionClass: httpAwsEs
+      })
+
+      logger.info('Method: searchMemos, esHost:' + JSON.stringify(esHost))
+      
+
+      const result = await client.search({
+        index: 'memos-index',
+        type: 'memos',
+        //q: `memoName:${searchPhrase}`
+        body: {
+          query: {
+            match: {
+              memoName: searchPhrase
+            }
+          }
+        }
+      }) as elasticsearch.SearchResponse<string>
+      
+      logger.info('Method: searchMemos, result:' + JSON.stringify(result))
+
+      const items = result//..Items //body
+
+      logger.info('Method: searchMemos, items count:' + result) //.count
+      logger.info('Method: searchMemos, items:' + JSON.stringify(items))
+
+      return JSON.stringify(items) //as Memo[]
+    }
+    catch (err) {
+      logger.error('Method: searchMemos, result:' + JSON.stringify(err))
+
+      throw err;
+    }
+  }
+
+
+  async createMemo(memo: Memo): Promise<Memo> {
     try {
       await this.docClient.put({
         TableName: this.memosTable,
@@ -54,31 +100,6 @@ export class MemosRepo {
     }
   }
 
-
-  async updateMemo(memoId: string, userId: string, memo: MemoUpdate) {
-
-    var params = {
-      TableName: this.memosTable,
-      Key: {
-        "userId": userId,
-        "memoId": memoId
-      },
-      UpdateExpression: "set memoName = :n, dueDate = :dd, done = :d",
-      ExpressionAttributeValues: {
-        ":n": memo.memoName,
-        ":dd": memo.dueDate,
-        ":d": memo.done
-      },
-      ReturnValues: "NONE"
-    }
-
-    try {
-      await this.docClient.update(params).promise()
-    }
-    catch (err) {
-      throw err;
-    }
-  }
 
 
   async updatePhotoUrl(memoId: string, userId: string) {

@@ -7,7 +7,7 @@ import { createLogger } from '../../utils/logger'
 import { memoExists, getUploadUrl, updatePhotoUrl } from '../../businessLogic/memos'
 import { getUserId } from '../utils'
 
-const logger = createLogger('auth')
+const logger = createLogger('Generate Upload URL')
 
 
 export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
