@@ -11,9 +11,9 @@ export async function getAllMemos(userId: string)
   return await memosRepo.getAllMemos(userId)
 }
 
-export async function searchMemos(userId: string, searchPhrase: string, esHost: string)
+export async function searchMemos(userId: string, searchPhrase: string, esHost: string, searchObj: any)
 : Promise<string> { //Promise<Memo[]> {
-  return await memosRepo.searchMemos(userId, searchPhrase, esHost)
+  return await memosRepo.searchMemos(userId, searchPhrase, esHost, searchObj)
 }
 
 export async function createMemo(

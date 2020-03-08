@@ -14,8 +14,19 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
     try {
         const userId = getUserId(event)
         const searchPhrase = event.queryStringParameters.q
+        //TODO: put this in the Memo Repo
+        const srchObj = {
+            index: 'memos-index',
+            body: {
+                query: {
+                    match: {
+                        memoName: searchPhrase
+                    }
+                }
+            }
+          }
 
-        const result = await searchMemos(userId, searchPhrase, esHost)
+        const result = await searchMemos(userId, searchPhrase, esHost, srchObj)
 
         if (result) {
           logger.info('Method: searchMemos statusCode: 200')

@@ -44,8 +44,10 @@ export class MemosRepo {
   }
 
 
-  async searchMemos(userId: string, searchPhrase: string, esHost: string): Promise<string> { //Promise<Memo[]> { //
+  async searchMemos(userId: string, searchPhrase: string, esHost: string, searchObj: any): Promise<string> { //Promise<Memo[]> { //
+    //TODO: rmeove at the end
     userId = userId;
+    searchPhrase = searchPhrase;
 
     try {
       const client = new elasticsearch.Client({ 
@@ -56,18 +58,7 @@ export class MemosRepo {
       logger.info('Method: searchMemos, esHost:' + JSON.stringify(esHost))
       
 
-      const result = await client.search({
-        index: 'memos-index',
-        type: 'memos',
-        //q: `memoName:${searchPhrase}`
-        body: {
-          query: {
-            match: {
-              memoName: searchPhrase
-            }
-          }
-        }
-      }) as elasticsearch.SearchResponse<string>
+      const result = await client.search(searchObj) as elasticsearch.SearchResponse<string>
       
       logger.info('Method: searchMemos, result:' + JSON.stringify(result))
 

@@ -74,6 +74,7 @@ functions:
 
   SearchMemos:
     environment:
+      MEMO_NAME_INDEX: ${self:provider.environment.MEMO_NAME_INDEX}
       ES_ENDPOINT: !GetAtt MemosSearch.DomainEndpoint
     handler: src/lambda/http/searchMemos.handler
     events:
@@ -83,16 +84,18 @@ functions:
           cors: true
       - http:
           method: post
-          path: /MemoIdIndex/GSI/_search
+          path: memos-index/_search
           cors: true
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:Query
+          #- dynamodb:GetItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEMOS_TABLE}
       - Effect: Allow
         Action:
           - dynamodb:Query
+          #- dynamodb:GetItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEMOS_TABLE}/index/${self:provider.environment.MEMO_NAME_INDEX}
 
 
@@ -171,6 +174,7 @@ functions:
       
   SyncWithElasticsearch:
     environment:
+      MEMO_NAME_INDEX: ${self:provider.environment.MEMO_NAME_INDEX}
       ES_ENDPOINT: !GetAtt MemosSearch.DomainEndpoint
     handler: src/lambda/dynamoDb/elasticSearchSync.handler
     events:
