@@ -60,6 +60,8 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
         memos: foundMemos,
         searchMemoPhrase: ''
       })
+
+      //this.renderMemos()
     } catch {
       alert('Memo search failed')
     }
@@ -129,7 +131,7 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
           <Input
             action={{
               color: 'green',
-              labelPosition: 'right',
+              labelPosition: 'left',
               icon: 'search',
               content: 'Search Memos',
               onClick: this.onMemoSearch
@@ -195,7 +197,7 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
         {this.state.memos.map((memo, pos) => {
           return (
             <Grid.Row key={memo.memoId}>
-              <Grid.Column width={10} verticalAlign="middle">
+              <Grid.Column width={14} verticalAlign="middle">
                 {memo.memoName}
               </Grid.Column>
               <Grid.Column width={1} floated="right">

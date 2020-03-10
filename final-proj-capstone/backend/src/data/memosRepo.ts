@@ -45,8 +45,9 @@ export class MemosRepo {
   }
 
 
-  async searchMemos(userId: string, searchPhrase: string, esHost: string): Promise<Memo[]> { //
-    
+  async searchMemos(userId: string, searchPhrase: string, esHost: string)
+    : Promise<Memo[]> {
+
     let result = new Array<Memo>()
 
     try {
@@ -55,35 +56,34 @@ export class MemosRepo {
         connectionClass: httpAwsEs
       })
 
-      
+
       let srchObj: any
       if (searchPhrase != '') {
-          srchObj = {
-              index: 'memos-index',
-              body: {
-                  query: {
-                      match_phrase: {
-                          memoName: searchPhrase
-                      }
-                  }
+        srchObj = {
+          index: 'memos-index',
+          body: {
+            query: {
+              match_phrase: {
+                memoName: searchPhrase
               }
+            }
           }
+        }
       }
       else {
-          srchObj = {
-              index: 'memos-index',
-              body: {
-                  query: {
-                      match_all: {}
-                  }
-              }
+        srchObj = {
+          index: 'memos-index',
+          body: {
+            query: {
+              match_all: {}
+            }
           }
+        }
       }
 
       const srchResult = await client.search(srchObj)
 
       logger.info('Method: searchMemos, result:' + JSON.stringify(srchResult))
-      logger.info('Method: searchMemos, _source:' + JSON.stringify(srchResult.hits.hits[0]._source))
       logger.info('Method: searchMemos, items count:' + srchResult.hits.total.toString()) //.count
 
       const hitItems = srchResult.hits.hits as Array<ElasticSearchHit>

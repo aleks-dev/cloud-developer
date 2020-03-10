@@ -83,19 +83,17 @@ functions:
           path: memos/search
           cors: true
       - http:
-          method: post #TODO: check with GSI/ ..
+          method: post
           path: memos-index/_search
           cors: true
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:Query
-          #- dynamodb:GetItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEMOS_TABLE}
       - Effect: Allow
         Action:
           - dynamodb:Query
-          #- dynamodb:GetItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.MEMOS_TABLE}/index/${self:provider.environment.MEMO_NAME_INDEX}
 
 
@@ -274,7 +272,7 @@ resources:
       Type: AWS::Elasticsearch::Domain
       Properties:
         ElasticsearchVersion: '6.8'
-        DomainName: memos-search-aleks-${self:provider.stage}
+        DomainName: memos-search-${self:provider.stage}
         ElasticsearchClusterConfig:
           DedicatedMasterEnabled: false
           InstanceCount: '1'
