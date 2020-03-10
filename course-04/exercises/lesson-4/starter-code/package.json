@@ -14,17 +14,17 @@
     "uuid": "^3.4.0"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.40",
+    "@types/aws-lambda": "^8.10.46",
     "@types/elasticsearch": "^5.0.36",
     "@types/jimp": "^0.2.28",
-    "@types/node": "^10.17.13",
-    "aws-sdk": "^2.608.0",
+    "@types/node": "^10.17.17",
+    "aws-sdk": "^2.632.0",
     "serverless-aws-documentation": "^1.1.0",
     "serverless-reqvalidator-plugin": "^1.0.3",
     "serverless-webpack": "^5.3.1",
     "ts-loader": "^5.4.5",
-    "typescript": "^3.7.5",
-    "webpack": "^4.41.5"
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.0"
   },
   "author": "Ivan Mushketyk",
   "contributors": [

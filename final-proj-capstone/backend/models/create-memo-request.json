@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "memo",
+    "type": "object",
+    "properties": {
+      "memoName": {
+        "type": "string"
+      },
+      "createdDate": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "memoName",
+      "createdDate"
+    ],
+    "additionalProperties": true
+  }
+  
