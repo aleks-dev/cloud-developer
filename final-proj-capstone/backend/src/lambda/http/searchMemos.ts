@@ -13,29 +13,19 @@ const esHost = 'https://' + process.env.ES_ENDPOINT
 export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
         const userId = getUserId(event)
-        const searchPhrase = event.queryStringParameters.q
-        //TODO: put this in the Memo Repo
-        const srchObj = {
-            index: 'memos-index',
-            body: {
-                query: {
-                    match: {
-                        memoName: searchPhrase
-                    }
-                }
-            }
-          }
+        const searchPhrase = event.queryStringParameters.q.trim()
 
-        const result = await searchMemos(userId, searchPhrase, esHost, srchObj)
+        const result = await searchMemos(userId, searchPhrase, esHost)
 
         if (result) {
-          logger.info('Method: searchMemos statusCode: 200')
-    
-          return {
-            statusCode: 200,
-            body: JSON.stringify({ items: result })
-          }
+            logger.info('Method: searchMemos statusCode: 200')
+
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ items: result })
+            }
         }
+
     } catch (err) {
         logger.error('Method: searchMemos, statusCode: 500, error: ' + JSON.stringify({ err }))
 

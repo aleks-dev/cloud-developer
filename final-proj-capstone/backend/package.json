@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Serverless MEMO image app",
   "dependencies": {
-    "@elastic/elasticsearch": "^7.6.0",
     "@types/axios": "^0.14.0",
     "@types/http-errors": "^1.6.3",
     "aws-xray-sdk": "^2.5.0",

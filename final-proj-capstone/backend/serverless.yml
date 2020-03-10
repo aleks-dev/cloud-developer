@@ -83,7 +83,7 @@ functions:
           path: memos/search
           cors: true
       - http:
-          method: post
+          method: post #TODO: check with GSI/ ..
           path: memos-index/_search
           cors: true
     iamRoleStatements:
@@ -273,8 +273,8 @@ resources:
     MemosSearch:
       Type: AWS::Elasticsearch::Domain
       Properties:
-        ElasticsearchVersion: '6.3'
-        DomainName: memos-search-${self:provider.stage}
+        ElasticsearchVersion: '6.8'
+        DomainName: memos-search-aleks-${self:provider.stage}
         ElasticsearchClusterConfig:
           DedicatedMasterEnabled: false
           InstanceCount: '1'

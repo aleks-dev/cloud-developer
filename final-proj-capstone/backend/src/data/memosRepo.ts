@@ -4,6 +4,7 @@ import { Memo } from '../models/Memo'
 import * as httpAwsEs from 'http-aws-es'
 import { createLogger } from '../utils/logger'
 import * as elasticsearch from 'elasticsearch'
+import { ElasticSearchHit } from '../models/ElasticSearchHit'
 
 const AWSXRay = require('aws-xray-sdk')
 const XAWS = AWSXRay.captureAWS(AWS)
@@ -44,30 +45,59 @@ export class MemosRepo {
   }
 
 
-  async searchMemos(userId: string, searchPhrase: string, esHost: string, searchObj: any): Promise<string> { //Promise<Memo[]> { //
-    //TODO: rmeove at the end
-    userId = userId;
-    searchPhrase = searchPhrase;
+  async searchMemos(userId: string, searchPhrase: string, esHost: string): Promise<Memo[]> { //
+    
+    let result = new Array<Memo>()
 
     try {
-      const client = new elasticsearch.Client({ 
-        hosts: [ esHost ],
+      const client = new elasticsearch.Client({
+        hosts: [esHost],
         connectionClass: httpAwsEs
       })
 
-      logger.info('Method: searchMemos, esHost:' + JSON.stringify(esHost))
       
+      let srchObj: any
+      if (searchPhrase != '') {
+          srchObj = {
+              index: 'memos-index',
+              body: {
+                  query: {
+                      match_phrase: {
+                          memoName: searchPhrase
+                      }
+                  }
+              }
+          }
+      }
+      else {
+          srchObj = {
+              index: 'memos-index',
+              body: {
+                  query: {
+                      match_all: {}
+                  }
+              }
+          }
+      }
 
-      const result = await client.search(searchObj) as elasticsearch.SearchResponse<string>
-      
-      logger.info('Method: searchMemos, result:' + JSON.stringify(result))
+      const srchResult = await client.search(srchObj)
 
-      const items = result//..Items //body
+      logger.info('Method: searchMemos, result:' + JSON.stringify(srchResult))
+      logger.info('Method: searchMemos, _source:' + JSON.stringify(srchResult.hits.hits[0]._source))
+      logger.info('Method: searchMemos, items count:' + srchResult.hits.total.toString()) //.count
 
-      logger.info('Method: searchMemos, items count:' + result) //.count
-      logger.info('Method: searchMemos, items:' + JSON.stringify(items))
+      const hitItems = srchResult.hits.hits as Array<ElasticSearchHit>
 
-      return JSON.stringify(items) //as Memo[]
+      if (hitItems && hitItems.length > 0) {
+        hitItems.forEach(hi => {
+          //TONOTICE: FILTER BY userId AS FINDING SUCH A WAY THROUGH ES-SEARCH API WAS VERY TIME-CINSUMING.
+          if (hi._source.userId == userId) {
+            result.push(hi._source)
+          }
+        });
+      }
+
+      return result
     }
     catch (err) {
       logger.error('Method: searchMemos, result:' + JSON.stringify(err))
