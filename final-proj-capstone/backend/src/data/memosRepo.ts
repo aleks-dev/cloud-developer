@@ -84,7 +84,7 @@ export class MemosRepo {
       const srchResult = await client.search(srchObj)
 
       logger.info('Method: searchMemos, result:' + JSON.stringify(srchResult))
-      logger.info('Method: searchMemos, items count:' + srchResult.hits.total.toString()) //.count
+      logger.info('Method: searchMemos, items count:' + srchResult.hits.total.toString())
 
       const hitItems = srchResult.hits.hits as Array<ElasticSearchHit>
 

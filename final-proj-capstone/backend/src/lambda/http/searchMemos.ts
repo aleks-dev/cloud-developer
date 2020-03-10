@@ -14,7 +14,6 @@ export const handler = middy(async (event: APIGatewayProxyEvent): Promise<APIGat
     try {
         const userId = getUserId(event)
         const searchPhrase = event.queryStringParameters.q.trim()
-
         const searchPhraseAccommodated = searchPhrase.replace('+', ' ')
 
         const result = await searchMemos(userId, searchPhraseAccommodated, esHost)

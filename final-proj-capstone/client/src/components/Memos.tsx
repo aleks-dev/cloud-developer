@@ -25,25 +25,31 @@ interface MemosProps {
 
 interface MemosState {
   memos: Memo[]
-  searchMemoPhrase: string
+  memosSearch: Memo[]
+  memosSearchPhrase: string
   newMemoName: string
   loadingMemos: boolean
+  searchButtonClicked: boolean
 }
 
 export class Memos extends React.PureComponent<MemosProps, MemosState> {
   state: MemosState = {
-    searchMemoPhrase: '',
+    memosSearchPhrase: '',
     memos: [],
+    memosSearch: [],
     newMemoName: '',
-    loadingMemos: true
+    loadingMemos: true,
+    searchButtonClicked: false
   }
 
   handleMemoSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ searchMemoPhrase: event.target.value })
+    this.setState({ 
+      memosSearchPhrase: event.target.value })
   }
 
   handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ newMemoName: event.target.value })
+    this.setState({ 
+      newMemoName: event.target.value })
   }
 
   onEditButtonClick = (memoId: string) => {
@@ -53,15 +59,23 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
   
   onMemoSearch = async (event: React.ChangeEvent<HTMLButtonElement>) => {
     try {
-      const foundMemos = await searchMemos(this.props.auth.getIdToken(), 
-                                           this.state.searchMemoPhrase)
+      const elasticSearchMemos = await searchMemos(this.props.auth.getIdToken(), 
+                                                   this.state.memosSearchPhrase)
+      const localStateMemos = new Array<Memo>()
+
+      elasticSearchMemos.forEach(foundMemo => {
+        const memo = this.state.memos.find(m => m.memoId == foundMemo.memoId)
+        if (memo) {
+          localStateMemos.push(memo)
+        }
+      });
 
       this.setState({
-        memos: foundMemos,
-        searchMemoPhrase: ''
+        memosSearch: localStateMemos,
+        memosSearchPhrase: '',
+        searchButtonClicked: true
       })
 
-      //this.renderMemos()
     } catch {
       alert('Memo search failed')
     }
@@ -78,7 +92,8 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
 
       this.setState({
         memos: [...this.state.memos, newMemo],
-        newMemoName: ''
+        newMemoName: '',
+        searchButtonClicked: false
       })
     } catch {
       alert('Memo creation failed')
@@ -90,7 +105,8 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
       await deleteMemo(this.props.auth.getIdToken(), memoId)
 
       this.setState({
-        memos: this.state.memos.filter(memo => memo.memoId != memoId)
+        memos: this.state.memos.filter(memo => memo.memoId != memoId),
+        searchButtonClicked: false
       })
     } catch {
       alert('Memo deletion failed')
@@ -101,6 +117,7 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
   async componentDidMount() {
     try {
       const memos = await getMemos(this.props.auth.getIdToken())
+
       this.setState({
         memos,
         loadingMemos: false
@@ -178,6 +195,10 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
       return this.renderLoading()
     }
 
+    if (this.state.searchButtonClicked) {
+      return this.renderMemosSearchList()
+    }
+    
     return this.renderMemosList()
   }
 
@@ -195,6 +216,46 @@ export class Memos extends React.PureComponent<MemosProps, MemosState> {
     return (
       <Grid padded>
         {this.state.memos.map((memo, pos) => {
+          return (
+            <Grid.Row key={memo.memoId}>
+              <Grid.Column width={14} verticalAlign="middle">
+                {memo.memoName}
+              </Grid.Column>
+              <Grid.Column width={1} floated="right">
+                <Button
+                  icon
+                  color="blue"
+                  onClick={() => this.onEditButtonClick(memo.memoId)}
+                >
+                  <Icon name="pencil" />
+                </Button>
+              </Grid.Column>
+              <Grid.Column width={1} floated="right">
+                <Button
+                  icon
+                  color="red"
+                  onClick={() => this.onMemoDelete(memo.memoId)}
+                >
+                  <Icon name="delete" />
+                </Button>
+              </Grid.Column>
+              <Grid.Column width={16}>
+                  {memo.photoUrl && (
+                    <Image src={memo.photoUrl} size="small" wrapped />
+                    )}
+                  <Divider />
+              </Grid.Column>
+            </Grid.Row>
+          )
+        })}
+      </Grid>
+    )
+  }
+
+  renderMemosSearchList() {
+    return (
+      <Grid padded>
+        {this.state.memosSearch.map((memo, pos) => {
           return (
             <Grid.Row key={memo.memoId}>
               <Grid.Column width={14} verticalAlign="middle">
