@@ -1,7 +1,7 @@
 # Aleks' version of Udacity's Cloud-Developer
 ---
 This project is forked from the [Udacity's Cloud Developer Nanodegree one](https://github.com/udacity/cloud-developer).
-It's a POW for my work on GitHub and my overall (high) engagement in this course  :)
+It's my GitHub POW of my overall (high) engagement and learned skills in this course  :)
 
 
 ## Project structure
