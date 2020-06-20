@@ -15,7 +15,7 @@ spec:
         service: backend-user
     spec:
       containers:
-      - image: aleksdev/udacity-c3-restapi-user
+      - image: dcwgpram/udacity-c3-restapi-user
         name: backend-user 
         imagePullPolicy: Always  
         resources:
