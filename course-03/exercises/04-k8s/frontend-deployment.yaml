@@ -13,7 +13,7 @@ spec:
         api: external        
     spec:
       containers:
-      - image: aleksdev/udacity-c3-frontend
+      - image: dcwgpram/udacity-c3-frontend
         name: frontend
         imagePullPolicy: Always          
         ports:

@@ -12,7 +12,7 @@ spec:
         service: backend-feed
     spec:
       containers:
-      - image: aleksdev/udacity-c3-restapi-feed
+      - image: dcwgpram/udacity-c3-restapi-feed
         name: backend-feed
         imagePullPolicy: Always
         resources:
