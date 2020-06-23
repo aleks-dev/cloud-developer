@@ -4,7 +4,7 @@ metadata:
   name: pod-example
 spec:
   containers:
-  - image: dcwgpram/udacity-c3-docker-nginx
+  - image: dcwgpram/udacity-c3-reverseproxy
     name: reverseproxy
     imagePullPolicy: Always          
     resources:

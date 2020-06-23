@@ -3,16 +3,16 @@ services:
   reverseproxy:
     build:
       context: .
-    image: aleksdev/udacity-c3-docker-nginx 
+    image: dcwgpram/udacity-c3-docker-nginx 
   backend_user:
     build:
       context: ../../../02_microservices/udacity-c3-restapi-user
-    image: aleksdev/udacity-c3-restapi-user
+    image: dcwgpram/udacity-c3-restapi-user
   backend_feed:
     build:
       context: ../../../02_microservices/udacity-c3-restapi-feed  
-    image: aleksdev/udacity-c3-restapi-feed
+    image: dcwgpram/udacity-c3-restapi-feed
   frontend:
     build:
       context: ../../../02_microservices/udacity-c3-frontend  
-    image: aleksdev/udacity-c3-frontend
+    image: dcwgpram/udacity-c3-frontend
